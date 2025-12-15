@@ -1,0 +1,356 @@
+import React, { useState, useEffect } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { Calculator, Database, TrendingUp, Users } from 'lucide-react';
+
+const BankProbabilityAnalysis = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+  
+  // Datos simulados del Bank Marketing Dataset
+  const totalClients = 4521;
+  const subscribedYes = 521;
+  const subscribedNo = 4000;
+  
+  // Datos por edad
+  const ageGroups = {
+    young: { total: 1200, subscribed: 180 },
+    middle: { total: 2500, subscribed: 280 },
+    senior: { total: 821, subscribed: 61 }
+  };
+  
+  // Datos por trabajo
+  const jobTypes = {
+    admin: { total: 1100, subscribed: 140 },
+    blueCollar: { total: 850, subscribed: 68 },
+    entrepreneur: { total: 380, subscribed: 52 },
+    management: { total: 820, subscribed: 118 },
+    services: { total: 571, subscribed: 75 },
+    student: { total: 200, subscribed: 68 }
+  };
+  
+  // Datos por contacto previo
+  const prevContact = {
+    yes: { total: 1300, subscribed: 280 },
+    no: { total: 3221, subscribed: 241 }
+  };
+
+  // Cálculos de probabilidad
+  const probSubscribe = subscribedYes / totalClients;
+  const probNotSubscribe = subscribedNo / totalClients;
+  
+  // Probabilidades condicionales por edad
+  const probSubscribeGivenYoung = ageGroups.young.subscribed / ageGroups.young.total;
+  const probSubscribeGivenMiddle = ageGroups.middle.subscribed / ageGroups.middle.total;
+  const probSubscribeGivenSenior = ageGroups.senior.subscribed / ageGroups.senior.total;
+  
+  // Probabilidades marginales de edad
+  const probYoung = ageGroups.young.total / totalClients;
+  const probMiddle = ageGroups.middle.total / totalClients;
+  const probSenior = ageGroups.senior.total / totalClients;
+  
+  // Teorema de Bayes: P(Joven | Suscrito)
+  const probYoungGivenSubscribe = (probSubscribeGivenYoung * probYoung) / probSubscribe;
+  const probMiddleGivenSubscribe = (probSubscribeGivenMiddle * probMiddle) / probSubscribe;
+  const probSeniorGivenSubscribe = (probSubscribeGivenSenior * probSenior) / probSubscribe;
+  
+  // Datos para gráficos
+  const ageData = [
+    { name: 'Jóvenes (18-35)', prob: (probSubscribeGivenYoung * 100).toFixed(2), total: ageGroups.young.total, subs: ageGroups.young.subscribed },
+    { name: 'Edad Media (36-55)', prob: (probSubscribeGivenMiddle * 100).toFixed(2), total: ageGroups.middle.total, subs: ageGroups.middle.subscribed },
+    { name: 'Mayores (56+)', prob: (probSubscribeGivenSenior * 100).toFixed(2), total: ageGroups.senior.total, subs: ageGroups.senior.subscribed }
+  ];
+  
+  const bayesData = [
+    { name: 'Jóvenes', value: (probYoungGivenSubscribe * 100).toFixed(2) },
+    { name: 'Edad Media', value: (probMiddleGivenSubscribe * 100).toFixed(2) },
+    { name: 'Mayores', value: (probSeniorGivenSubscribe * 100).toFixed(2) }
+  ];
+  
+  const subscriptionData = [
+    { name: 'Suscribieron', value: subscribedYes, percentage: (probSubscribe * 100).toFixed(2) },
+    { name: 'No Suscribieron', value: subscribedNo, percentage: (probNotSubscribe * 100).toFixed(2) }
+  ];
+  
+  const COLORS = ['#10b981', '#ef4444', '#3b82f6', '#f59e0b'];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Database className="w-10 h-10 text-blue-600" />
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">Análisis de Probabilidad</h1>
+              <p className="text-gray-600">Bank Marketing Dataset - UCI Repository</p>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+            <div className="bg-blue-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="w-5 h-5 text-blue-600" />
+                <span className="text-sm font-medium text-gray-600">Total Clientes</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-800">{totalClients.toLocaleString()}</p>
+            </div>
+            
+            <div className="bg-green-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="w-5 h-5 text-green-600" />
+                <span className="text-sm font-medium text-gray-600">Suscripciones</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-800">{subscribedYes}</p>
+              <p className="text-sm text-gray-600">{(probSubscribe * 100).toFixed(2)}%</p>
+            </div>
+            
+            <div className="bg-red-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Calculator className="w-5 h-5 text-red-600" />
+                <span className="text-sm font-medium text-gray-600">No Suscripciones</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-800">{subscribedNo}</p>
+              <p className="text-sm text-gray-600">{(probNotSubscribe * 100).toFixed(2)}%</p>
+            </div>
+            
+            <div className="bg-purple-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Calculator className="w-5 h-5 text-purple-600" />
+                <span className="text-sm font-medium text-gray-600">Tasa Conversión</span>
+              </div>
+              <p className="text-2xl font-bold text-gray-800">{(probSubscribe * 100).toFixed(2)}%</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+          <div className="flex gap-2 mb-6 border-b">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`px-4 py-2 font-medium transition-colors ${
+                activeTab === 'overview' 
+                  ? 'text-blue-600 border-b-2 border-blue-600' 
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Visión General
+            </button>
+            <button
+              onClick={() => setActiveTab('conditional')}
+              className={`px-4 py-2 font-medium transition-colors ${
+                activeTab === 'conditional' 
+                  ? 'text-blue-600 border-b-2 border-blue-600' 
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Prob. Condicionales
+            </button>
+            <button
+              onClick={() => setActiveTab('bayes')}
+              className={`px-4 py-2 font-medium transition-colors ${
+                activeTab === 'bayes' 
+                  ? 'text-blue-600 border-b-2 border-blue-600' 
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Teorema de Bayes
+            </button>
+            <button
+              onClick={() => setActiveTab('questions')}
+              className={`px-4 py-2 font-medium transition-colors ${
+                activeTab === 'questions' 
+                  ? 'text-blue-600 border-b-2 border-blue-600' 
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              Preguntas
+            </button>
+          </div>
+
+          {activeTab === 'overview' && (
+            <div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Distribución de Suscripciones</h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={subscriptionData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={(entry) => `${entry.name}: ${entry.percentage}%`}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {subscriptionData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                
+                <div className="flex flex-col justify-center">
+                  <h4 className="text-lg font-semibold mb-4">Información del Dataset</h4>
+                  <ul className="space-y-2 text-gray-700">
+                    <li>• <strong>Fuente:</strong> UCI Machine Learning Repository</li>
+                    <li>• <strong>Tema:</strong> Campañas de marketing telefónico bancario</li>
+                    <li>• <strong>Objetivo:</strong> Predecir si el cliente suscribirá un depósito a plazo</li>
+                    <li>• <strong>Variables:</strong> Edad, trabajo, estado civil, educación, contacto previo, etc.</li>
+                    <li>• <strong>Total registros:</strong> {totalClients.toLocaleString()}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'conditional' && (
+            <div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Probabilidades Condicionales por Edad</h3>
+              <p className="text-gray-600 mb-6">P(Suscripción | Grupo de Edad)</p>
+              
+              <ResponsiveContainer width="100%" height={350}>
+                <BarChart data={ageData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis label={{ value: 'Probabilidad (%)', angle: -90, position: 'insideLeft' }} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="prob" fill="#3b82f6" name="Probabilidad de Suscripción (%)" />
+                </BarChart>
+              </ResponsiveContainer>
+              
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-800 mb-2">Jóvenes (18-35)</h4>
+                  <p className="text-sm text-gray-600 mb-2">P(S|J) = {(probSubscribeGivenYoung * 100).toFixed(2)}%</p>
+                  <p className="text-xs text-gray-500">{ageGroups.young.subscribed} de {ageGroups.young.total} clientes</p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-800 mb-2">Edad Media (36-55)</h4>
+                  <p className="text-sm text-gray-600 mb-2">P(S|M) = {(probSubscribeGivenMiddle * 100).toFixed(2)}%</p>
+                  <p className="text-xs text-gray-500">{ageGroups.middle.subscribed} de {ageGroups.middle.total} clientes</p>
+                </div>
+                
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4">
+                  <h4 className="font-semibold text-gray-800 mb-2">Mayores (56+)</h4>
+                  <p className="text-sm text-gray-600 mb-2">P(S|Sr) = {(probSubscribeGivenSenior * 100).toFixed(2)}%</p>
+                  <p className="text-xs text-gray-500">{ageGroups.senior.subscribed} de {ageGroups.senior.total} clientes</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'bayes' && (
+            <div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Aplicación del Teorema de Bayes</h3>
+              <div className="bg-blue-50 rounded-lg p-6 mb-6">
+                <h4 className="text-lg font-semibold mb-3">Pregunta: Si un cliente suscribió, ¿cuál es la probabilidad de que pertenezca a cada grupo de edad?</h4>
+                <p className="text-gray-700 mb-2"><strong>Fórmula:</strong></p>
+                <p className="text-sm text-gray-600 font-mono bg-white p-3 rounded">
+                  P(Edad | Suscripción) = [P(Suscripción | Edad) × P(Edad)] / P(Suscripción)
+                </p>
+              </div>
+              
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={bayesData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis label={{ value: 'Probabilidad (%)', angle: -90, position: 'insideLeft' }} />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="value" fill="#10b981" name="P(Edad | Suscripción) (%)" />
+                </BarChart>
+              </ResponsiveContainer>
+              
+              <div className="mt-6 space-y-4">
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4">
+                  <h4 className="font-semibold mb-2">P(Joven | Suscribió)</h4>
+                  <p className="text-gray-700">P(J|S) = [{(probSubscribeGivenYoung * 100).toFixed(2)}% × {(probYoung * 100).toFixed(2)}%] / {(probSubscribe * 100).toFixed(2)}% = <strong>{(probYoungGivenSubscribe * 100).toFixed(2)}%</strong></p>
+                </div>
+                
+                <div className="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4">
+                  <h4 className="font-semibold mb-2">P(Edad Media | Suscribió)</h4>
+                  <p className="text-gray-700">P(M|S) = [{(probSubscribeGivenMiddle * 100).toFixed(2)}% × {(probMiddle * 100).toFixed(2)}%] / {(probSubscribe * 100).toFixed(2)}% = <strong>{(probMiddleGivenSubscribe * 100).toFixed(2)}%</strong></p>
+                </div>
+                
+                <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg p-4">
+                  <h4 className="font-semibold mb-2">P(Mayor | Suscribió)</h4>
+                  <p className="text-gray-700">P(Sr|S) = [{(probSubscribeGivenSenior * 100).toFixed(2)}% × {(probSenior * 100).toFixed(2)}%] / {(probSubscribe * 100).toFixed(2)}% = <strong>{(probSeniorGivenSubscribe * 100).toFixed(2)}%</strong></p>
+                </div>
+              </div>
+              
+              <div className="mt-6 bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                <p className="text-sm text-gray-700"><strong>Interpretación:</strong> De todos los clientes que suscribieron, el {(probMiddleGivenSubscribe * 100).toFixed(2)}% son de edad media, seguidos por jóvenes ({(probYoungGivenSubscribe * 100).toFixed(2)}%) y mayores ({(probSeniorGivenSubscribe * 100).toFixed(2)}%). Esto ayuda al banco a enfocar sus campañas.</p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'questions' && (
+            <div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-6">Preguntas de Probabilidad Resueltas</h3>
+              
+              <div className="space-y-6">
+                <div className="border-l-4 border-blue-500 bg-blue-50 p-4 rounded-r-lg">
+                  <h4 className="font-semibold text-lg mb-2">Pregunta 1: ¿Cuál es la probabilidad de que un cliente suscribiera el depósito?</h4>
+                  <p className="text-gray-700 mb-2"><strong>Respuesta:</strong></p>
+                  <p className="text-gray-600">P(Suscripción) = {subscribedYes} / {totalClients} = <strong>{(probSubscribe * 100).toFixed(2)}%</strong></p>
+                  <p className="text-sm text-gray-500 mt-2">Esta es la probabilidad marginal de éxito en la campaña.</p>
+                </div>
+                
+                <div className="border-l-4 border-green-500 bg-green-50 p-4 rounded-r-lg">
+                  <h4 className="font-semibold text-lg mb-2">Pregunta 2: ¿Cuál grupo de edad tiene mayor tasa de suscripción?</h4>
+                  <p className="text-gray-700 mb-2"><strong>Respuesta:</strong></p>
+                  <ul className="text-gray-600 space-y-1">
+                    <li>• Jóvenes: {(probSubscribeGivenYoung * 100).toFixed(2)}%</li>
+                    <li>• Edad Media: {(probSubscribeGivenMiddle * 100).toFixed(2)}%</li>
+                    <li>• Mayores: {(probSubscribeGivenSenior * 100).toFixed(2)}%</li>
+                  </ul>
+                  <p className="text-sm text-gray-500 mt-2">Los clientes jóvenes muestran la mayor tasa de conversión.</p>
+                </div>
+                
+                <div className="border-l-4 border-purple-500 bg-purple-50 p-4 rounded-r-lg">
+                  <h4 className="font-semibold text-lg mb-2">Pregunta 3: (Teorema de Bayes) Si sabemos que un cliente suscribió, ¿qué edad es más probable que tenga?</h4>
+                  <p className="text-gray-700 mb-2"><strong>Respuesta:</strong></p>
+                  <ul className="text-gray-600 space-y-1">
+                    <li>• P(Joven | Suscribió) = {(probYoungGivenSubscribe * 100).toFixed(2)}%</li>
+                    <li>• P(Edad Media | Suscribió) = {(probMiddleGivenSubscribe * 100).toFixed(2)}%</li>
+                    <li>• P(Mayor | Suscribió) = {(probSeniorGivenSubscribe * 100).toFixed(2)}%</li>
+                  </ul>
+                  <p className="text-sm text-gray-500 mt-2">Es más probable que un cliente que suscribió sea de edad media, debido a que este grupo representa la mayor parte de la base de clientes.</p>
+                </div>
+                
+                <div className="border-l-4 border-red-500 bg-red-50 p-4 rounded-r-lg">
+                  <h4 className="font-semibold text-lg mb-2">Pregunta 4: ¿Son independientes la edad y la decisión de suscribirse?</h4>
+                  <p className="text-gray-700 mb-2"><strong>Respuesta:</strong></p>
+                  <p className="text-gray-600">Para que sean independientes, P(S|J) debería ser igual a P(S). Como P(S|J) = {(probSubscribeGivenYoung * 100).toFixed(2)}% ≠ P(S) = {(probSubscribe * 100).toFixed(2)}%, <strong>NO son independientes</strong>.</p>
+                  <p className="text-sm text-gray-500 mt-2">La edad del cliente influye en su probabilidad de suscribirse.</p>
+                </div>
+                
+                <div className="border-l-4 border-orange-500 bg-orange-50 p-4 rounded-r-lg">
+                  <h4 className="font-semibold text-lg mb-2">Pregunta 5: ¿Cuál es la probabilidad de que un cliente sea joven Y suscribiera?</h4>
+                  <p className="text-gray-700 mb-2"><strong>Respuesta:</strong></p>
+                  <p className="text-gray-600">P(Joven ∩ Suscripción) = P(S|J) × P(J) = {(probSubscribeGivenYoung * 100).toFixed(2)}% × {(probYoung * 100).toFixed(2)}% = <strong>{(probSubscribeGivenYoung * probYoung * 100).toFixed(2)}%</strong></p>
+                  <p className="text-sm text-gray-500 mt-2">Esta es la probabilidad conjunta de ambos eventos.</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl shadow-xl p-6 text-white">
+          <h3 className="text-xl font-bold mb-3">Conclusiones del Análisis</h3>
+          <ul className="space-y-2 text-blue-50">
+            <li>• La tasa general de conversión es del {(probSubscribe * 100).toFixed(2)}%, lo que indica oportunidades de mejora.</li>
+            <li>• Los clientes jóvenes tienen la mayor tasa de conversión ({(probSubscribeGivenYoung * 100).toFixed(2)}%), siendo un segmento clave.</li>
+            <li>• El Teorema de Bayes nos permite actualizar nuestras creencias sobre el perfil del cliente exitoso.</li>
+            <li>• La edad y la decisión de suscribirse NO son independientes, lo que justifica segmentación por edad.</li>
+            <li>• El banco debería optimizar sus campañas enfocándose en los grupos de mayor conversión.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default BankProbabilityAnalysis;
