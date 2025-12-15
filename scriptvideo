@@ -1,0 +1,356 @@
+# Guión para Video: Análisis de Probabilidad con Bank Marketing Dataset
+
+**Duración total:** 8-10 minutos  
+**Público objetivo:** Estudiantes de estadística y probabilidad  
+**Objetivo:** Explicar conceptos de probabilidad aplicados a datos reales
+
+---
+
+## INTRODUCCIÓN (0:00 - 1:00)
+
+### [Diapositiva 1: Título]
+**AUDIO:**
+"Hola a todos, en este video vamos a realizar un análisis completo de probabilidad usando datos reales. Vamos a explorar el Bank Marketing Dataset del repositorio UCI y aplicar conceptos fundamentales de probabilidad, incluyendo el famoso Teorema de Bayes."
+
+**VISUAL:** 
+- Título del video con animación
+- Logo UCI Machine Learning Repository
+
+---
+
+### [Diapositiva 2: ¿Qué es el Bank Marketing Dataset?]
+**AUDIO:**
+"Este dataset contiene información de 4,521 clientes de un banco portugués que fueron contactados por teléfono para ofrecerles un depósito a plazo fijo. La pregunta clave es: ¿qué factores influyen en que un cliente acepte o rechace la oferta?"
+
+**VISUAL:**
+- Imagen de centro de llamadas
+- Estadísticas básicas del dataset:
+  * 4,521 clientes
+  * Variables: edad, trabajo, educación, etc.
+  * Variable objetivo: Suscripción (Sí/No)
+
+**AUDIO (continuación):**
+"Vamos a usar probabilidad para responder preguntas de negocio concretas y ayudar al banco a optimizar sus campañas de marketing."
+
+---
+
+## PARTE 1: ANÁLISIS EXPLORATORIO (1:00 - 2:30)
+
+### [Diapositiva 3: Distribución General]
+**AUDIO:**
+"Empecemos viendo la distribución básica. De los 4,521 clientes contactados, 521 aceptaron la oferta y 4,000 la rechazaron. Esto nos da una tasa de conversión del 11.52%."
+
+**VISUAL:**
+- Gráfico circular mostrando:
+  * 11.52% Suscribieron (verde)
+  * 88.48% No suscribieron (rojo)
+- Números en pantalla con animación
+
+**AUDIO (continuación):**
+"Esto significa que aproximadamente 1 de cada 9 clientes acepta. No está mal, pero ¿podemos mejorar? Para eso, necesitamos entender mejor quiénes son estos clientes."
+
+---
+
+### [Diapositiva 4: Segmentación por Edad]
+**AUDIO:**
+"Dividimos a los clientes en tres grupos de edad: jóvenes de 18 a 35 años, edad media de 36 a 55, y mayores de 56 años en adelante."
+
+**VISUAL:**
+- Tabla con tres filas:
+  * Jóvenes: 1,200 clientes, 180 suscripciones
+  * Edad Media: 2,500 clientes, 280 suscripciones  
+  * Mayores: 821 clientes, 61 suscripciones
+
+**AUDIO (continuación):**
+"Observen que el grupo de edad media es el más grande, representando más de la mitad de todos los clientes. Pero, ¿cuál grupo tiene mejor tasa de conversión? Para responder esto, necesitamos calcular probabilidades."
+
+---
+
+## PARTE 2: PROBABILIDAD MARGINAL (2:30 - 3:30)
+
+### [Diapositiva 5: Primera Pregunta - Probabilidad Marginal]
+**AUDIO:**
+"Nuestra primera pregunta es: ¿Cuál es la probabilidad de que un cliente contactado aleatoriamente suscribiera el depósito?"
+
+**VISUAL:**
+- Pregunta en grande
+- Fórmula apareciendo gradualmente:
+  ```
+  P(Suscripción) = Casos favorables / Casos totales
+  ```
+
+**AUDIO (continuación):**
+"Esta es la probabilidad marginal, la más básica. Simplemente dividimos el número de clientes que suscribieron entre el total de clientes."
+
+**VISUAL:**
+- Cálculo animado paso a paso:
+  ```
+  P(S) = 521 / 4,521 = 0.1152 = 11.52%
+  ```
+
+**AUDIO (continuación):**
+"Obtenemos 11.52%. Esta es nuestra probabilidad base o de referencia. Pero esta probabilidad puede cambiar si tenemos información adicional sobre el cliente."
+
+---
+
+## PARTE 3: PROBABILIDADES CONDICIONALES (3:30 - 5:00)
+
+### [Diapositiva 6: Segunda Pregunta - Probabilidades Condicionales]
+**AUDIO:**
+"La segunda pregunta es más interesante: ¿La probabilidad de suscripción cambia según la edad del cliente?"
+
+**VISUAL:**
+- Pregunta en pantalla
+- Fórmula de probabilidad condicional:
+  ```
+  P(Suscripción | Edad) = P(S ∩ Edad) / P(Edad)
+  ```
+
+**AUDIO (continuación):**
+"Aquí usamos probabilidad condicional. La barra vertical se lee 'dado que'. Queremos saber la probabilidad de suscripción DADO que el cliente pertenece a cierto grupo de edad."
+
+---
+
+### [Diapositiva 7: Cálculos por Grupo de Edad]
+**AUDIO:**
+"Calculemos para cada grupo. Para los jóvenes, 180 de 1,200 suscribieron."
+
+**VISUAL:**
+- Cálculo animado:
+  ```
+  P(S | Joven) = 180 / 1,200 = 15.00%
+  ```
+
+**AUDIO (continuación):**
+"15%. Esto es mayor que la probabilidad base del 11.52%. Los jóvenes son más propensos a suscribirse."
+
+**VISUAL:**
+- Aparecen los otros dos cálculos:
+  ```
+  P(S | Edad Media) = 280 / 2,500 = 11.20%
+  P(S | Mayores) = 61 / 821 = 7.43%
+  ```
+
+---
+
+### [Diapositiva 8: Gráfico Comparativo]
+**AUDIO:**
+"Veamos esto gráficamente. La edad media tiene una tasa similar a la general, pero los mayores tienen la tasa más baja, solo 7.43%."
+
+**VISUAL:**
+- Gráfico de barras mostrando las tres tasas
+- Línea horizontal en 11.52% (probabilidad base)
+
+**AUDIO (continuación):**
+"Esto nos dice algo importante: la edad y la decisión de suscribirse NO son independientes. Si fueran independientes, todas estas tasas serían iguales. Como no lo son, significa que la edad influye en la decisión."
+
+---
+
+## PARTE 4: TEOREMA DE BAYES (5:00 - 7:30)
+
+### [Diapositiva 9: Tercera Pregunta - Teorema de Bayes]
+**AUDIO:**
+"Ahora viene la pregunta más sofisticada, que requiere el Teorema de Bayes. Imaginen que el banco acaba de conseguir una nueva suscripción. La pregunta es: ¿Cuál es la probabilidad de que ese cliente sea joven, de edad media, o mayor?"
+
+**VISUAL:**
+- Pregunta destacada
+- Icono de cliente genérico con signo de interrogación
+
+**AUDIO (continuación):**
+"Esta es la probabilidad inversa. Antes calculamos la probabilidad de suscripción DADO la edad. Ahora queremos la probabilidad de la edad DADO que hubo suscripción. Para esto necesitamos el Teorema de Bayes."
+
+---
+
+### [Diapositiva 10: El Teorema de Bayes]
+**AUDIO:**
+"El Teorema de Bayes es una de las herramientas más poderosas en probabilidad y estadística. Nos permite 'dar vuelta' las probabilidades condicionales."
+
+**VISUAL:**
+- Fórmula del Teorema de Bayes con animación:
+  ```
+  P(Edad | Suscripción) = [P(Suscripción | Edad) × P(Edad)] / P(Suscripción)
+  ```
+
+**AUDIO (continuación):**
+"La fórmula dice que la probabilidad de la edad dado que hubo suscripción es igual a la probabilidad de suscripción dado la edad, multiplicada por la probabilidad de esa edad, todo dividido por la probabilidad total de suscripción."
+
+**VISUAL:**
+- Cada término se resalta al mencionarlo
+- Etiquetas: "Verosimilitud", "Prior", "Evidencia", "Posterior"
+
+---
+
+### [Diapositiva 11: Calculando con Bayes - Jóvenes]
+**AUDIO:**
+"Apliquemos Bayes para calcular la probabilidad de que un cliente que suscribió sea joven."
+
+**VISUAL:**
+- Paso 1: Mostrar valores conocidos:
+  ```
+  P(S | Joven) = 15.00%
+  P(Joven) = 1,200 / 4,521 = 26.54%
+  P(S) = 11.52%
+  ```
+
+**AUDIO (continuación):**
+"Sustituimos en la fórmula de Bayes..."
+
+**VISUAL:**
+- Paso 2: Sustitución animada:
+  ```
+  P(Joven | S) = (0.15 × 0.2654) / 0.1152
+                = 0.03981 / 0.1152
+                = 0.3454 = 34.54%
+  ```
+
+**AUDIO (continuación):**
+"El resultado es 34.54%. De todos los clientes que suscribieron, aproximadamente el 34% son jóvenes."
+
+---
+
+### [Diapositiva 12: Resultados Completos de Bayes]
+**AUDIO:**
+"Haciendo el mismo cálculo para los otros grupos de edad obtenemos el cuadro completo."
+
+**VISUAL:**
+- Gráfico de barras mostrando:
+  * Jóvenes: 34.54%
+  * Edad Media: 53.75%
+  * Mayores: 11.71%
+  * Total = 100%
+
+**AUDIO (continuación):**
+"Aquí está el insight clave: aunque los jóvenes tienen la MAYOR TASA de conversión individual del 15%, el grupo de edad media representa la MAYOR PARTE de las suscripciones totales, más del 53%. ¿Por qué? Porque son el grupo más grande."
+
+---
+
+### [Diapositiva 13: Interpretación de Bayes]
+**AUDIO:**
+"Esta es la belleza del Teorema de Bayes. Nos permite balancear dos factores: qué tan efectivo es un segmento, y qué tan grande es ese segmento. Ambos importan."
+
+**VISUAL:**
+- Diagrama mostrando dos factores:
+  * Eficiencia (tasa de conversión)
+  * Volumen (tamaño del segmento)
+
+**AUDIO (continuación):**
+"Para el banco, esto significa que no pueden enfocarse solo en los jóvenes. Sí, son más propensos a suscribirse individualmente, pero el grupo de edad media genera más suscripciones totales porque son muchos más clientes."
+
+---
+
+## PARTE 5: CONCLUSIONES Y RECOMENDACIONES (7:30 - 9:00)
+
+### [Diapositiva 14: Resumen de Preguntas Respondidas]
+**AUDIO:**
+"Resumamos lo que hemos aprendido con nuestro análisis probabilístico."
+
+**VISUAL:**
+- Lista animada apareciendo uno por uno:
+  1. ✓ Probabilidad marginal: 11.52%
+  2. ✓ Mejor tasa por edad: Jóvenes (15%)
+  3. ✓ Mayor volumen: Edad Media (53.75%)
+  4. ✓ Edad y suscripción: NO son independientes
+  5. ✓ Probabilidad conjunta calculada
+
+**AUDIO (continuación):**
+"Respondimos cinco preguntas usando tres tipos de probabilidad: marginal, condicional, y el Teorema de Bayes. Cada una nos dio una perspectiva diferente sobre los datos."
+
+---
+
+### [Diapositiva 15: Recomendaciones para el Banco]
+**AUDIO:**
+"Basándonos en este análisis, ¿qué debería hacer el banco?"
+
+**VISUAL:**
+- Recomendaciones apareciendo con iconos:
+
+**AUDIO (continuación):**
+"Primero, segmentar las campañas por edad. Cada grupo necesita una estrategia diferente."
+
+**VISUAL:**
+- "1. Segmentación por edad"
+
+**AUDIO (continuación):**
+"Segundo, optimizar el mensaje para jóvenes, ya que son más receptivos."
+
+**VISUAL:**
+- "2. Optimizar mensajes para jóvenes"
+
+**AUDIO (continuación):**
+"Tercero, mantener volumen en edad media porque aunque su tasa es promedio, generan la mayoría de conversiones."
+
+**VISUAL:**
+- "3. Mantener volumen en edad media"
+
+**AUDIO (continuación):**
+"Cuarto, investigar por qué los mayores tienen baja tasa. ¿Es el producto? ¿El mensaje? ¿El momento?"
+
+**VISUAL:**
+- "4. Investigar barrera en mayores"
+
+**AUDIO (continuación):**
+"Y quinto, expandir el análisis a otras variables como ocupación, educación, y contactos previos."
+
+**VISUAL:**
+- "5. Expandir análisis multivariable"
+
+---
+
+### [Diapositiva 16: El Poder de la Probabilidad]
+**AUDIO:**
+"Este ejemplo demuestra cómo la probabilidad no es solo teoría abstracta. Es una herramienta práctica para tomar mejores decisiones de negocio."
+
+**VISUAL:**
+- Flujo: Datos → Probabilidad → Insights → Decisiones → Resultados
+
+**AUDIO (continuación):**
+"Conceptos como probabilidad condicional y el Teorema de Bayes nos permiten extraer información valiosa de los datos, información que no es obvia a simple vista."
+
+---
+
+## CIERRE (9:00 - 9:30)
+
+### [Diapositiva 17: Recursos y Cierre]
+**AUDIO:**
+"Si quieres profundizar más, el dataset completo está disponible en el repositorio UCI Machine Learning. El código Python y el informe en LaTeX están disponibles en la descripción del video."
+
+**VISUAL:**
+- Enlaces en pantalla:
+  * UCI ML Repository
+  * Código en GitHub
+  * Informe PDF
+
+**AUDIO (continuación):**
+"Espero que este análisis te haya ayudado a entender cómo aplicar probabilidad a problemas reales. Si te gustó el video, dale like y suscríbete para más contenido sobre ciencia de datos y estadística."
+
+**VISUAL:**
+- Animación de like y suscripción
+
+**AUDIO (final):**
+"Nos vemos en el próximo video. ¡Hasta luego!"
+
+**VISUAL:**
+- Pantalla final con logo y música de cierre
+
+---
+
+## NOTAS DE PRODUCCIÓN
+
+### Timing por sección:
+- Introducción: 1:00
+- Análisis Exploratorio: 1:30
+- Probabilidad Marginal: 1:00
+- Probabilidades Condicionales: 1:30
+- Teorema de Bayes: 2:30
+- Conclusiones: 1:30
+- Cierre: 0:30
+- **TOTAL: 9:30 minutos**
+
+### Elementos visuales necesarios:
+1. Gráficos de barras (probabilidades condicionales)
+2. Gráfico circular (distribución general)
+3. Diagramas de fórmulas animadas
+4. Tablas de datos
+5. Iconos ilustrativos (banco, clientes, etc.)
+6. Transiciones suaves entre diapositivas
+---  
