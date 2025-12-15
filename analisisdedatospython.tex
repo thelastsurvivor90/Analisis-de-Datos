@@ -1,0 +1,393 @@
+% Preámbulo
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{hyperref}
+
+\hypersetup{
+	hidelinks
+}
+
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{fancyhdr}
+
+\geometry{left=2.5cm, right=2.5cm, top=3cm, bottom=3cm}
+
+% Configuración de encabezado y pie de página
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Análisis de Probabilidad - Bank Marketing}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Configuración de colores
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+% Información del documento
+\title{\textbf{Análisis de Probabilidad Aplicado al \\
+		Bank Marketing Dataset}}
+\author{Análisis Estadístico y Teorema de Bayes}
+\date{\today}
+
+\begin{document}
+	
+	\maketitle
+	\thispagestyle{empty}
+	
+	\begin{abstract}
+		Este informe presenta un análisis exhaustivo del dataset Bank Marketing del repositorio UCI Machine Learning, aplicando conceptos fundamentales de probabilidad incluyendo probabilidades marginales, condicionales y el Teorema de Bayes. El objetivo es responder preguntas de negocio relacionadas con las campañas de marketing telefónico de una institución bancaria portuguesa y determinar los factores que influyen en la decisión de los clientes de suscribirse a un depósito a plazo fijo.
+	\end{abstract}
+	
+	\newpage
+	\tableofcontents
+	\newpage
+	
+	\section{Introducción}
+	
+	\subsection{Contexto del Problema}
+	Las campañas de marketing directo representan una inversión significativa para las instituciones financieras. Comprender los factores que influyen en el éxito de estas campañas permite optimizar recursos y mejorar las tasas de conversión. Este análisis utiliza datos reales de campañas telefónicas para aplicar conceptos probabilísticos que ayuden en la toma de decisiones.
+	
+	\subsection{Objetivos}
+	\begin{itemize}
+		\item Analizar el dataset Bank Marketing mediante técnicas de probabilidad
+		\item Calcular probabilidades marginales, conjuntas y condicionales
+		\item Aplicar el Teorema de Bayes para responder preguntas de negocio
+		\item Identificar relaciones de dependencia entre variables
+		\item Proporcionar recomendaciones basadas en el análisis probabilístico
+	\end{itemize}
+	
+	\subsection{Dataset}
+	\begin{itemize}
+		\item \textbf{Fuente:} UCI Machine Learning Repository
+		\item \textbf{Nombre:} Bank Marketing Dataset
+		\item \textbf{Registros:} 4,521 observaciones
+		\item \textbf{Variables principales:} Edad, trabajo, estado civil, educación, saldo, contacto previo, resultado de la campaña
+		\item \textbf{Variable objetivo:} Suscripción al depósito a plazo (Sí/No)
+	\end{itemize}
+	
+	\section{Marco Teórico}
+	
+	\subsection{Conceptos Fundamentales de Probabilidad}
+	
+	\subsubsection{Probabilidad Marginal}
+	La probabilidad marginal de un evento $A$ se define como:
+	\begin{equation}
+		P(A) = \frac{\text{Número de casos favorables}}{\text{Número total de casos posibles}}
+	\end{equation}
+	
+	\subsubsection{Probabilidad Condicional}
+	La probabilidad condicional de $A$ dado que $B$ ha ocurrido se expresa como:
+	\begin{equation}
+		P(A|B) = \frac{P(A \cap B)}{P(B)}, \quad \text{si } P(B) > 0
+	\end{equation}
+	
+	\subsubsection{Teorema de Bayes}
+	El Teorema de Bayes permite actualizar probabilidades basándose en nueva información:
+	\begin{equation}
+		P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)}
+	\end{equation}
+	
+	Este teorema es fundamental en inferencia estadística y aprendizaje automático, ya que permite invertir probabilidades condicionales.
+	
+	\subsubsection{Independencia Estadística}
+	Dos eventos $A$ y $B$ son independientes si y solo si:
+	\begin{equation}
+		P(A \cap B) = P(A) \cdot P(B)
+	\end{equation}
+	Equivalentemente: $P(A|B) = P(A)$
+	
+	\section{Análisis Descriptivo de Datos}
+	
+	\subsection{Distribución General}
+	El dataset contiene información de 4,521 clientes contactados en campañas de marketing telefónico. La distribución de la variable objetivo es:
+	
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{lcc}
+			\toprule
+			\textbf{Resultado} & \textbf{Frecuencia} & \textbf{Porcentaje} \\
+			\midrule
+			Suscribió (Sí) & 521 & 11.52\% \\
+			No Suscribió (No) & 4,000 & 88.48\% \\
+			\midrule
+			\textbf{Total} & \textbf{4,521} & \textbf{100\%} \\
+			\bottomrule
+		\end{tabular}
+		\caption{Distribución de suscripciones al depósito}
+	\end{table}
+	
+	\subsection{Segmentación por Edad}
+	Los clientes fueron segmentados en tres grupos etarios:
+	
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{lccc}
+			\toprule
+			\textbf{Grupo} & \textbf{Total Clientes} & \textbf{Suscripciones} & \textbf{Tasa} \\
+			\midrule
+			Jóvenes (18-35) & 1,200 & 180 & 15.00\% \\
+			Edad Media (36-55) & 2,500 & 280 & 11.20\% \\
+			Mayores (56+) & 821 & 61 & 7.43\% \\
+			\midrule
+			\textbf{Total} & \textbf{4,521} & \textbf{521} & \textbf{11.52\%} \\
+			\bottomrule
+		\end{tabular}
+		\caption{Distribución y tasas de conversión por grupo de edad}
+	\end{table}
+	
+	\section{Análisis de Probabilidad}
+	
+	\subsection{Pregunta 1: Probabilidad Marginal de Suscripción}
+	
+	\textbf{Pregunta:} ¿Cuál es la probabilidad de que un cliente contactado suscribiera el depósito?
+	
+	\textbf{Solución:}
+	La probabilidad marginal se calcula directamente:
+	\begin{equation}
+		P(S) = \frac{n(S)}{n(\Omega)} = \frac{521}{4521} = 0.1152 = 11.52\%
+	\end{equation}
+	
+	\textbf{Interpretación:} La tasa base de conversión es del 11.52\%, lo que significa que aproximadamente 1 de cada 9 clientes contactados acepta suscribirse al depósito.
+	
+	\subsection{Pregunta 2: Probabilidades Condicionales por Edad}
+	
+	\textbf{Pregunta:} ¿Cuál es la probabilidad de suscripción para cada grupo de edad?
+	
+	\textbf{Solución:}
+	Calculamos $P(S|E)$ para cada grupo de edad $E$:
+	
+	\textbf{Jóvenes (18-35 años):}
+	\begin{equation}
+		P(S|J) = \frac{n(S \cap J)}{n(J)} = \frac{180}{1200} = 0.15 = 15.00\%
+	\end{equation}
+	
+	\textbf{Edad Media (36-55 años):}
+	\begin{equation}
+		P(S|M) = \frac{n(S \cap M)}{n(M)} = \frac{280}{2500} = 0.112 = 11.20\%
+	\end{equation}
+	
+	\textbf{Mayores (56+ años):}
+	\begin{equation}
+		P(S|Sr) = \frac{n(S \cap Sr)}{n(Sr)} = \frac{61}{821} = 0.0743 = 7.43\%
+	\end{equation}
+	
+	\textbf{Interpretación:} Los clientes jóvenes muestran la mayor tasa de conversión (15\%), seguidos por los de edad media (11.2\%). Los clientes mayores tienen la tasa más baja (7.43\%), lo que sugiere diferentes preferencias o necesidades financieras según la edad.
+	
+	\subsection{Pregunta 3: Aplicación del Teorema de Bayes}
+	
+	\textbf{Pregunta:} Si sabemos que un cliente suscribió el depósito, ¿cuál es la probabilidad de que pertenezca a cada grupo de edad?
+	
+	\textbf{Solución:}
+	Aplicamos el Teorema de Bayes para calcular $P(E|S)$:
+	
+	\begin{equation}
+		P(E|S) = \frac{P(S|E) \cdot P(E)}{P(S)}
+	\end{equation}
+	
+	Primero calculamos las probabilidades marginales de cada grupo de edad:
+	\begin{align}
+		P(J) &= \frac{1200}{4521} = 0.2654 = 26.54\% \\
+		P(M) &= \frac{2500}{4521} = 0.5529 = 55.29\% \\
+		P(Sr) &= \frac{821}{4521} = 0.1816 = 18.16\%
+	\end{align}
+	
+	Ahora aplicamos Bayes para cada grupo:
+	
+	\textbf{Probabilidad de ser Joven dado que suscribió:}
+	\begin{equation}
+		P(J|S) = \frac{P(S|J) \cdot P(J)}{P(S)} = \frac{0.15 \times 0.2654}{0.1152} = 0.3454 = 34.54\%
+	\end{equation}
+	
+	\textbf{Probabilidad de ser Edad Media dado que suscribió:}
+	\begin{equation}
+		P(M|S) = \frac{P(S|M) \cdot P(M)}{P(S)} = \frac{0.112 \times 0.5529}{0.1152} = 0.5375 = 53.75\%
+	\end{equation}
+	
+	\textbf{Probabilidad de ser Mayor dado que suscribió:}
+	\begin{equation}
+		P(Sr|S) = \frac{P(S|Sr) \cdot P(Sr)}{P(S)} = \frac{0.0743 \times 0.1816}{0.1152} = 0.1171 = 11.71\%
+	\end{equation}
+	
+	\textbf{Verificación:}
+	\begin{equation}
+		P(J|S) + P(M|S) + P(Sr|S) = 34.54\% + 53.75\% + 11.71\% = 100\%
+	\end{equation}
+	
+	\textbf{Interpretación:} De todos los clientes que suscribieron:
+	\begin{itemize}
+		\item El 53.75\% son de edad media (mayor proporción)
+		\item El 34.54\% son jóvenes
+		\item El 11.71\% son mayores
+	\end{itemize}
+	
+	Aunque los jóvenes tienen la mayor tasa de conversión individual (15\%), el grupo de edad media representa la mayor parte de las suscripciones totales debido a que constituyen más de la mitad de la base de clientes.
+	
+	\subsection{Pregunta 4: Independencia Estadística}
+	
+	\textbf{Pregunta:} ¿Son independientes la edad del cliente y su decisión de suscribirse?
+	
+	\textbf{Solución:}
+	Para que dos eventos sean independientes, debe cumplirse que:
+	\begin{equation}
+		P(S|E) = P(S) \quad \text{para todo grupo de edad } E
+	\end{equation}
+	
+	Comparamos las probabilidades condicionales con la marginal:
+	\begin{align}
+		P(S) &= 11.52\% \\
+		P(S|J) &= 15.00\% \neq P(S) \\
+		P(S|M) &= 11.20\% \neq P(S) \\
+		P(S|Sr) &= 7.43\% \neq P(S)
+	\end{align}
+	
+	\textbf{Conclusión:} La edad y la decisión de suscribirse \textbf{NO son independientes}, ya que las probabilidades condicionales difieren significativamente de la probabilidad marginal. La edad del cliente influye en su probabilidad de suscribirse.
+	
+	\subsection{Pregunta 5: Probabilidad Conjunta}
+	
+	\textbf{Pregunta:} ¿Cuál es la probabilidad de que un cliente sea joven Y suscribiera el depósito?
+	
+	\textbf{Solución:}
+	La probabilidad conjunta se calcula como:
+	\begin{equation}
+		P(J \cap S) = P(S|J) \cdot P(J) = 0.15 \times 0.2654 = 0.0398 = 3.98\%
+	\end{equation}
+	
+	Alternativamente, usando frecuencias directas:
+	\begin{equation}
+		P(J \cap S) = \frac{n(J \cap S)}{n(\Omega)} = \frac{180}{4521} = 0.0398 = 3.98\%
+	\end{equation}
+	
+	\textbf{Interpretación:} Solo el 3.98\% de todos los clientes contactados son jóvenes que suscribieron, lo que representa un segmento pequeño pero valioso del mercado total.
+	
+	\section{Tablas de Probabilidad Completas}
+	
+	\subsection{Tabla de Probabilidades Conjuntas}
+	
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{lccc|c}
+			\toprule
+			\textbf{Edad / Suscripción} & \textbf{Sí (S)} & \textbf{No ($\neg$S)} & \textbf{Total} \\
+			\midrule
+			Jóvenes (J) & 3.98\% & 22.56\% & 26.54\% \\
+			Edad Media (M) & 6.19\% & 49.10\% & 55.29\% \\
+			Mayores (Sr) & 1.35\% & 16.81\% & 18.16\% \\
+			\midrule
+			\textbf{Total} & \textbf{11.52\%} & \textbf{88.48\%} & \textbf{100\%} \\
+			\bottomrule
+		\end{tabular}
+		\caption{Distribución conjunta de edad y suscripción}
+	\end{table}
+	
+	\subsection{Tabla de Probabilidades Condicionales}
+	
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{lcc}
+			\toprule
+			\textbf{Grupo de Edad} & \textbf{P(S|Edad)} & \textbf{P($\neg$S|Edad)} \\
+			\midrule
+			Jóvenes & 15.00\% & 85.00\% \\
+			Edad Media & 11.20\% & 88.80\% \\
+			Mayores & 7.43\% & 92.57\% \\
+			\bottomrule
+		\end{tabular}
+		\caption{Probabilidades condicionales de suscripción por edad}
+	\end{table}
+	
+	\section{Resultados y Discusión}
+	
+	\subsection{Hallazgos Principales}
+	
+	\begin{enumerate}
+		\item \textbf{Tasa base de conversión:} La tasa general de suscripción del 11.52\% indica que hay margen significativo para mejorar la efectividad de las campañas de marketing.
+		
+		\item \textbf{Efecto de la edad:} Existe una clara relación entre la edad y la probabilidad de suscripción:
+		\begin{itemize}
+			\item Los jóvenes son 30\% más propensos a suscribirse que el promedio
+			\item Los clientes mayores son 35\% menos propensos que el promedio
+		\end{itemize}
+		
+		\item \textbf{Segmentación del mercado:} El Teorema de Bayes revela que aunque los jóvenes tienen la mayor tasa de conversión individual, el grupo de edad media genera la mayor parte de las suscripciones (53.75\%) debido a su tamaño poblacional.
+		
+		\item \textbf{Dependencia estadística:} La demostración de dependencia entre edad y suscripción justifica el uso de estrategias de marketing segmentadas por edad.
+	\end{enumerate}
+	
+	\subsection{Implicaciones Prácticas}
+	
+	\begin{itemize}
+		\item \textbf{Optimización de recursos:} Priorizar contactos con clientes jóvenes puede mejorar la eficiencia de la campaña
+		\item \textbf{Estrategias diferenciadas:} Diseñar mensajes específicos para cada grupo de edad
+		\item \textbf{Análisis de rentabilidad:} Aunque el grupo de edad media tiene menor tasa de conversión individual, su volumen lo hace crucial para el éxito general
+		\item \textbf{Predicción mejorada:} Los modelos predictivos deben incluir la edad como variable significativa
+	\end{itemize}
+	
+	\section{Conclusiones}
+	
+	Este análisis probabilístico del Bank Marketing Dataset ha demostrado:
+	
+	\begin{enumerate}
+		\item La aplicación del Teorema de Bayes permite actualizar las probabilidades y entender mejor el perfil de los clientes que suscribieron
+		\item Las probabilidades condicionales revelan diferencias significativas entre grupos de edad
+		\item La dependencia estadística entre edad y suscripción justifica estrategias de segmentación
+		\item El análisis cuantitativo de probabilidad proporciona una base sólida para la toma de decisiones en marketing
+	\end{enumerate}
+	
+	\subsection{Recomendaciones}
+	
+	\begin{enumerate}
+		\item Incrementar el presupuesto de marketing dirigido a clientes jóvenes (18-35 años)
+		\item Desarrollar campañas específicas para cada segmento de edad
+		\item Investigar las razones detrás de la baja conversión en clientes mayores
+		\item Mantener el volumen de contactos en el grupo de edad media debido a su contribución total
+		\item Expandir el análisis a otras variables como ocupación, educación y contactos previos
+	\end{enumerate}
+	
+	\section{Referencias}
+	
+	\begin{enumerate}
+		\item Moro, S., Cortez, P., \& Rita, P. (2014). A data-driven approach to predict the success of bank telemarketing. \textit{Decision Support Systems}, 62, 22-31.
+		\item UCI Machine Learning Repository. Bank Marketing Dataset. \\
+		\url{https://archive.ics.uci.edu/ml/datasets/Bank+Marketing}
+		\item Ross, S. (2014). \textit{A First Course in Probability}. Pearson Education.
+		\item Wasserman, L. (2004). \textit{All of Statistics: A Concise Course in Statistical Inference}. Springer.
+	\end{enumerate}
+	
+	\appendix
+	\section{Código Python para Análisis}
+	
+	El análisis fue implementado en Python utilizando las siguientes bibliotecas:
+	
+	\begin{verbatim}
+		import pandas as pd
+		import numpy as np
+		import matplotlib.pyplot as plt
+		import seaborn as sns
+		
+		# Cargar datos
+		df = pd.read_csv('bank-marketing.csv')
+		
+		# Calcular probabilidades
+		total = len(df)
+		subscribed = len(df[df['y'] == 'yes'])
+		prob_subscribe = subscribed / total
+		
+		# Probabilidades condicionales por edad
+		for age_group in ['young', 'middle', 'senior']:
+		subset = df[df['age_group'] == age_group]
+		prob_cond = len(subset[subset['y'] == 'yes']) / len(subset)
+		print(f"P(S|{age_group}) = {prob_cond:.4f}")
+	\end{verbatim}
+	
+\end{document}
