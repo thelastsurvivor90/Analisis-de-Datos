@@ -1,0 +1,616 @@
+# Guía Completa del Proyecto: Análisis de Probabilidad - Bank Marketing Dataset
+
+## 📋 Resumen del Proyecto
+
+Este proyecto cumple con todos los requisitos solicitados:
+
+1. ✅ **Dataset abierto**: Bank Marketing del UCI ML Repository
+2. ✅ **Análisis de probabilidad**: Probabilidades marginales, condicionales y Teorema de Bayes
+3. ✅ **Informe en LaTeX**: Documento académico completo
+4. ✅ **Video explicativo**: Guión detallado de 6-10 minutos
+
+---
+
+## 📊 Parte 1: Obtención del Dataset
+
+### Opción A: Descarga Manual
+
+1. Visita: https://archive.ics.uci.edu/dataset/222/bank+marketing
+2. Descarga el archivo `bank-additional-full.csv`
+3. Guárdalo en tu carpeta de trabajo
+
+### Opción B: Descarga con Python
+
+```python
+import pandas as pd
+from ucimlrepo import fetch_ucirepo 
+
+# Fetch dataset 
+bank_marketing = fetch_ucirepo(id=222) 
+  
+# Data (as pandas dataframes) 
+X = bank_marketing.data.features 
+y = bank_marketing.data.targets 
+  
+# Metadata 
+print(bank_marketing.metadata) 
+  
+# Variable information 
+print(bank_marketing.variables) 
+```
+
+### Opción C: Descarga Directa
+
+```python
+url = 'https://archive.ics.uci.edu/ml/machine-learning-databases/00222/bank-additional-full.csv'
+df = pd.read_csv(url, sep=';')
+```
+
+---
+
+## 🔬 Parte 2: Análisis de Probabilidad
+
+### Código Python Completo
+
+```python
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Configuración de visualización
+plt.style.use('seaborn-v0_8')
+sns.set_palette("husl")
+
+# Cargar datos
+df = pd.read_csv('bank-additional-full.csv', sep=';')
+
+# Crear grupos de edad
+def categorize_age(age):
+    if age < 36:
+        return 'young'
+    elif age < 56:
+        return 'middle'
+    else:
+        return 'senior'
+
+df['age_group'] = df['age'].apply(categorize_age)
+
+# ========================================
+# ANÁLISIS DE PROBABILIDAD
+# ========================================
+
+# 1. PROBABILIDAD MARGINAL
+total_clients = len(df)
+subscribed = len(df[df['y'] == 'yes'])
+not_subscribed = len(df[df['y'] == 'no'])
+
+prob_subscribe = subscribed / total_clients
+prob_not_subscribe = not_subscribed / total_clients
+
+print("=" * 50)
+print("PROBABILIDAD MARGINAL")
+print("=" * 50)
+print(f"P(Suscripción) = {prob_subscribe:.4f} ({prob_subscribe*100:.2f}%)")
+print(f"P(No Suscripción) = {prob_not_subscribe:.4f} ({prob_not_subscribe*100:.2f}%)")
+print()
+
+# 2. PROBABILIDADES CONDICIONALES POR EDAD
+print("=" * 50)
+print("PROBABILIDADES CONDICIONALES")
+print("=" * 50)
+
+age_groups = ['young', 'middle', 'senior']
+age_labels = ['Jóvenes (18-35)', 'Edad Media (36-55)', 'Mayores (56+)']
+
+conditional_probs = {}
+for group, label in zip(age_groups, age_labels):
+    subset = df[df['age_group'] == group]
+    total_group = len(subset)
+    subscribed_group = len(subset[subset['y'] == 'yes'])
+    
+    prob_cond = subscribed_group / total_group
+    conditional_probs[group] = {
+        'total': total_group,
+        'subscribed': subscribed_group,
+        'prob': prob_cond
+    }
+    
+    print(f"{label}:")
+    print(f"  Total: {total_group}")
+    print(f"  Suscripciones: {subscribed_group}")
+    print(f"  P(S|{group}) = {prob_cond:.4f} ({prob_cond*100:.2f}%)")
+    print()
+
+# 3. PROBABILIDADES MARGINALES DE EDAD
+print("=" * 50)
+print("PROBABILIDADES MARGINALES DE EDAD")
+print("=" * 50)
+
+prob_age = {}
+for group, label in zip(age_groups, age_labels):
+    prob = len(df[df['age_group'] == group]) / total_clients
+    prob_age[group] = prob
+    print(f"P({label}) = {prob:.4f} ({prob*100:.2f}%)")
+print()
+
+# 4. TEOREMA DE BAYES
+print("=" * 50)
+print("TEOREMA DE BAYES")
+print("=" * 50)
+print("P(Edad | Suscripción) = [P(Suscripción | Edad) × P(Edad)] / P(Suscripción)")
+print()
+
+bayes_results = {}
+for group, label in zip(age_groups, age_labels):
+    # P(Edad | Suscripción) = P(S|Edad) * P(Edad) / P(S)
+    numerator = conditional_probs[group]['prob'] * prob_age[group]
+    posterior = numerator / prob_subscribe
+    bayes_results[group] = posterior
+    
+    print(f"P({label} | Suscripción):")
+    print(f"  = [{conditional_probs[group]['prob']:.4f} × {prob_age[group]:.4f}] / {prob_subscribe:.4f}")
+    print(f"  = {posterior:.4f} ({posterior*100:.2f}%)")
+    print()
+
+# Verificación (debe sumar 1)
+total_posterior = sum(bayes_results.values())
+print(f"Verificación: Σ P(Edad|S) = {total_posterior:.4f} (debe ser 1.0000)")
+print()
+
+# 5. INDEPENDENCIA ESTADÍSTICA
+print("=" * 50)
+print("TEST DE INDEPENDENCIA")
+print("=" * 50)
+print("Para independencia: P(S|Edad) debe ser igual a P(S) para toda Edad")
+print()
+
+independent = True
+for group, label in zip(age_groups, age_labels):
+    diff = abs(conditional_probs[group]['prob'] - prob_subscribe)
+    print(f"{label}:")
+    print(f"  P(S|{group}) = {conditional_probs[group]['prob']:.4f}")
+    print(f"  P(S) = {prob_subscribe:.4f}")
+    print(f"  Diferencia = {diff:.4f}")
+    if diff > 0.001:  # Umbral de significancia
+        independent = False
+        print(f"  → NO son iguales")
+    else:
+        print(f"  → Son aproximadamente iguales")
+    print()
+
+if independent:
+    print("CONCLUSIÓN: La edad y la suscripción SON independientes")
+else:
+    print("CONCLUSIÓN: La edad y la suscripción NO son independientes")
+print()
+
+# 6. PROBABILIDAD CONJUNTA
+print("=" * 50)
+print("PROBABILIDADES CONJUNTAS")
+print("=" * 50)
+
+for group, label in zip(age_groups, age_labels):
+    # P(Edad ∩ Suscripción) = P(S|Edad) * P(Edad)
+    joint_prob = conditional_probs[group]['prob'] * prob_age[group]
+    print(f"P({label} ∩ Suscripción) = {joint_prob:.4f} ({joint_prob*100:.2f}%)")
+
+print()
+
+# ========================================
+# VISUALIZACIONES
+# ========================================
+
+# Gráfico 1: Distribución General
+fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+
+# Subplot 1: Pie chart de suscripciones
+labels = ['Suscribió', 'No Suscribió']
+sizes = [subscribed, not_subscribed]
+colors = ['#10b981', '#ef4444']
+explode = (0.1, 0)
+
+axes[0, 0].pie(sizes, explode=explode, labels=labels, colors=colors,
+               autopct='%1.1f%%', shadow=True, startangle=90)
+axes[0, 0].set_title('Distribución de Suscripciones', fontsize=14, fontweight='bold')
+
+# Subplot 2: Probabilidades condicionales por edad
+age_data = {
+    'Grupo': age_labels,
+    'Probabilidad': [conditional_probs[g]['prob']*100 for g in age_groups]
+}
+axes[0, 1].bar(age_data['Grupo'], age_data['Probabilidad'], color=['#3b82f6', '#10b981', '#f59e0b'])
+axes[0, 1].axhline(y=prob_subscribe*100, color='red', linestyle='--', label='P(S) base')
+axes[0, 1].set_title('Probabilidad de Suscripción por Edad', fontsize=14, fontweight='bold')
+axes[0, 1].set_ylabel('Probabilidad (%)')
+axes[0, 1].legend()
+axes[0, 1].set_ylim([0, 20])
+
+# Subplot 3: Teorema de Bayes
+bayes_data = {
+    'Grupo': age_labels,
+    'Probabilidad Posterior': [bayes_results[g]*100 for g in age_groups]
+}
+axes[1, 0].bar(bayes_data['Grupo'], bayes_data['Probabilidad Posterior'], 
+               color=['#8b5cf6', '#ec4899', '#f97316'])
+axes[1, 0].set_title('P(Edad | Suscripción) - Teorema de Bayes', fontsize=14, fontweight='bold')
+axes[1, 0].set_ylabel('Probabilidad Posterior (%)')
+axes[1, 0].set_ylim([0, 60])
+
+# Subplot 4: Tabla resumen
+summary_data = []
+for group, label in zip(age_groups, age_labels):
+    summary_data.append([
+        label,
+        f"{conditional_probs[group]['total']}",
+        f"{conditional_probs[group]['subscribed']}",
+        f"{conditional_probs[group]['prob']*100:.2f}%",
+        f"{bayes_results[group]*100:.2f}%"
+    ])
+
+axes[1, 1].axis('tight')
+axes[1, 1].axis('off')
+table = axes[1, 1].table(cellText=summary_data,
+                          colLabels=['Grupo', 'Total', 'Suscr.', 'P(S|E)', 'P(E|S)'],
+                          cellLoc='center',
+                          loc='center',
+                          colWidths=[0.25, 0.15, 0.15, 0.15, 0.15])
+table.auto_set_font_size(False)
+table.set_fontsize(10)
+table.scale(1, 2)
+axes[1, 1].set_title('Resumen de Probabilidades', fontsize=14, fontweight='bold', pad=20)
+
+plt.tight_layout()
+plt.savefig('analisis_probabilidad.png', dpi=300, bbox_inches='tight')
+plt.show()
+
+print("Gráficos guardados como 'analisis_probabilidad.png'")
+```
+
+---
+
+## 📄 Parte 3: Compilar el Informe LaTeX
+
+### Opción A: Overleaf (Online - Recomendado)
+
+1. Visita https://www.overleaf.com
+2. Crea una cuenta gratuita
+3. Crea un nuevo proyecto
+4. Copia y pega el código LaTeX completo
+5. Compila con el botón "Recompile"
+6. Descarga el PDF
+
+### Opción B: LaTeX Local
+
+**Instalación en Windows:**
+```bash
+# Descargar e instalar MiKTeX
+# https://miktex.org/download
+
+# O usar chocolatey
+choco install miktex
+```
+
+**Instalación en macOS:**
+```bash
+# Instalar MacTeX
+brew install --cask mactex
+```
+
+**Instalación en Linux (Ubuntu/Debian):**
+```bash
+sudo apt-get update
+sudo apt-get install texlive-full
+```
+
+**Compilar el documento:**
+```bash
+# Guardar el código LaTeX como 'informe.tex'
+pdflatex informe.tex
+pdflatex informe.tex  # Segunda vez para referencias
+```
+
+### Opción C: Visual Studio Code con LaTeX
+
+1. Instalar VS Code
+2. Instalar extensión "LaTeX Workshop"
+3. Abrir el archivo .tex
+4. Usar Ctrl+Alt+B para compilar
+
+---
+
+## 🎥 Parte 4: Crear el Video
+
+### Herramientas Recomendadas
+
+**Para Presentaciones:**
+- PowerPoint (Microsoft 365)
+- Google Slides (Gratis)
+- Canva (Versión gratuita disponible)
+- Prezi (Presentaciones dinámicas)
+
+**Para Grabación de Pantalla:**
+- OBS Studio (Gratis, código abierto)
+- Loom (Gratis hasta 5 min, perfecto para demo)
+- Camtasia (Pago, pero muy completo)
+- Zoom (Grabar una sesión contigo mismo)
+
+**Para Edición:**
+- DaVinci Resolve (Gratis, profesional)
+- Shotcut (Gratis, código abierto)
+- Adobe Premiere Pro (Pago)
+- iMovie (Mac, gratis)
+
+### Pasos para Crear el Video
+
+1. **Preparar las Diapositivas** (1-2 horas)
+   - Usa el guión proporcionado
+   - Crea 15-17 diapositivas
+   - Incluye los gráficos generados en Python
+   - Agrega las fórmulas matemáticas
+
+2. **Practicar el Script** (30 minutos)
+   - Lee el guión 2-3 veces
+   - Cronométrate para asegurar 6-10 minutos
+   - Marca pausas y énfasis
+
+3. **Configurar el Espacio** (15 minutos)
+   - Busca lugar silencioso
+   - Buena iluminación (natural o lámpara frontal)
+   - Prueba el micrófono
+   - Fondo limpio si apareces en cámara
+
+4. **Grabar** (30-60 minutos)
+   - Graba en secciones si es más fácil
+   - No te preocupes por errores, editarás después
+   - Mantén energía y entusiasmo
+   - Graba varias tomas de secciones difíciles
+
+5. **Editar** (1-2 horas)
+   - Corta errores y pausas largas
+   - Añade transiciones suaves
+   - Incluye música de fondo (sin copyright)
+   - Agrega texto/gráficos si ayuda
+   - Balancea el audio
+
+6. **Exportar** (10-20 minutos)
+   - Formato: MP4
+   - Resolución: 1920x1080 (Full HD)
+   - Frame rate: 30 fps
+   - Bitrate: 8-10 Mbps
+
+### Template de Diapositivas Sugerido
+
+**Diapositiva 1:** Título + tu nombre
+**Diapositiva 2-3:** Introducción al dataset
+**Diapositiva 4:** Distribución general (gráfico circular)
+**Diapositiva 5:** Segmentación por edad (tabla)
+**Diapositiva 6:** Fórmula probabilidad marginal
+**Diapositiva 7:** Resultado pregunta 1
+**Diapositiva 8:** Fórmula probabilidad condicional
+**Diapositiva 9-10:** Resultados por grupo de edad
+**Diapositiva 11:** Gráfico comparativo
+**Diapositiva 12:** Fórmula Teorema de Bayes
+**Diapositiva 13-14:** Cálculos y resultados Bayes
+**Diapositiva 15:** Gráfico resultados Bayes
+**Diapositiva 16:** Conclusiones y recomendaciones
+**Diapositiva 17:** Cierre y recursos
+
+---
+
+## ✅ Checklist de Entrega
+
+### Archivos a Entregar:
+
+- [ ] **Dataset**: `bank-additional-full.csv`
+- [ ] **Código Python**: `analisis_probabilidad.py`
+- [ ] **Gráficos**: `analisis_probabilidad.png`
+- [ ] **Informe LaTeX**: `informe.tex`
+- [ ] **Informe PDF**: `informe.pdf`
+- [ ] **Video**: `video_analisis.mp4` (6-10 minutos)
+- [ ] **Presentación**: `presentacion.pptx` o `.pdf`
+- [ ] **(Opcional) README**: Instrucciones de ejecución
+
+### Verificación de Contenido:
+
+**En el Código:**
+- [ ] Cálculo de probabilidad marginal
+- [ ] Cálculo de probabilidades condicionales
+- [ ] Aplicación del Teorema de Bayes
+- [ ] Test de independencia
+- [ ] Probabilidades conjuntas
+- [ ] Visualizaciones claras
+- [ ] Comentarios explicativos
+
+**En el Informe LaTeX:**
+- [ ] Introducción con contexto
+- [ ] Marco teórico de probabilidad
+- [ ] Descripción del dataset
+- [ ] 5 preguntas respondidas
+- [ ] Fórmulas matemáticas correctas
+- [ ] Tablas de resultados
+- [ ] Gráficos insertados
+- [ ] Conclusiones y recomendaciones
+- [ ] Referencias bibliográficas
+
+**En el Video:**
+- [ ] Duración: 6-10 minutos
+- [ ] Audio claro y sin ruido
+- [ ] Visual: diapositivas legibles
+- [ ] Explicación de cada concepto
+- [ ] Demostración del Teorema de Bayes
+- [ ] Interpretación de resultados
+- [ ] Conclusiones claras
+
+---
+
+## 🎯 Criterios de Evaluación Típicos
+
+Tu proyecto probablemente será evaluado en:
+
+1. **Selección y manejo del dataset** (15%)
+   - Dataset apropiado y bien documentado
+   - Comprensión de las variables
+
+2. **Aplicación de conceptos de probabilidad** (30%)
+   - Correcta aplicación de fórmulas
+   - Interpretación adecuada
+   - Uso del Teorema de Bayes
+
+3. **Calidad del informe LaTeX** (25%)
+   - Estructura profesional
+   - Claridad en la redacción
+   - Correctitud matemática
+
+4. **Calidad del video** (20%)
+   - Claridad en la explicación
+   - Duración apropiada
+   - Calidad técnica
+
+5. **Originalidad y profundidad** (10%)
+   - Preguntas interesantes
+   - Análisis más allá de lo básico
+   - Conclusiones útiles
+
+---
+
+## 💡 Tips Extra
+
+### Para Destacar tu Proyecto:
+
+1. **Análisis adicional de otras variables**: No te limites solo a edad, explora también ocupación, educación, estado civil
+2. **Comparación de múltiples modelos probabilísticos**: Compara independencia vs dependencia
+3. **Visualizaciones de alta calidad**: Usa colores consistentes y profesionales
+4. **Interpretación de negocios**: Siempre conecta los resultados matemáticos con decisiones prácticas
+5. **Código bien documentado**: Comentarios claros que expliquen cada paso
+
+### Errores Comunes a Evitar:
+
+❌ **No verificar que las probabilidades sumen 1**
+❌ **Confundir P(A|B) con P(B|A)**
+❌ **Olvidar interpretar los resultados en contexto**
+❌ **Video demasiado rápido o sin pausas**
+❌ **Fórmulas sin explicación de variables**
+❌ **No citar la fuente del dataset**
+❌ **Audio de mala calidad en el video**
+
+### Recursos Adicionales:
+
+**Datasets alternativos (si quieres cambiar):**
+- Titanic Dataset: Supervivencia en el Titanic
+- Iris Dataset: Clasificación de flores
+- Heart Disease: Predicción de enfermedades cardíacas
+- Student Performance: Rendimiento académico
+- Customer Churn: Cancelación de clientes
+
+**Tutoriales recomendados:**
+- LaTeX para principiantes: https://www.overleaf.com/learn
+- Probabilidad y estadística: Khan Academy
+- Python para análisis de datos: DataCamp
+- Edición de video: Tutoriales de DaVinci Resolve
+
+**Libros de referencia:**
+- "Introduction to Probability" - Blitzstein & Hwang
+- "All of Statistics" - Larry Wasserman
+- "Python for Data Analysis" - Wes McKinney
+
+---
+
+## 🚀 Comandos Rápidos
+
+### Ejecutar análisis completo:
+```bash
+python analisis_probabilidad.py
+```
+
+### Compilar LaTeX:
+```bash
+pdflatex informe.tex
+pdflatex informe.tex
+```
+
+### Verificar instalación de dependencias:
+```bash
+pip list | grep -E "pandas|numpy|matplotlib|seaborn|scipy"
+```
+
+---
+
+## 🐛 Solución de Problemas
+
+### Problema: Error al importar pandas
+**Solución:**
+```bash
+pip install pandas numpy matplotlib seaborn scipy
+```
+
+### Problema: LaTeX no compila
+**Solución:**
+- Verificar que todas las etiquetas estén cerradas
+- Buscar caracteres especiales sin escapar (\%, \$, \&)
+- Usar Overleaf online si hay problemas locales
+
+### Problema: Video muy largo (>10 min)
+**Solución:**
+- Elimina ejemplos redundantes
+- Habla más rápido en secciones menos importantes
+- Reduce el tiempo de introducción y cierre
+- Ve directo a los cálculos importantes
+
+### Problema: Gráficos no se ven bien
+**Solución:**
+```python
+plt.rcParams['figure.dpi'] = 300
+plt.rcParams['savefig.dpi'] = 300
+plt.rcParams['font.size'] = 12
+```
+
+---
+
+## 📧 Contacto y Créditos
+
+**Dataset:** UCI Machine Learning Repository  
+**Autores originales:** S. Moro, P. Cortez, P. Rita (2014)  
+**Licencia del código:** MIT License (libre uso educativo)
+
+---
+
+## 🎓 Aprendizajes Clave
+
+Después de completar este proyecto, habrás aprendido:
+
+1. ✅ Cómo obtener y preparar datasets reales
+2. ✅ Aplicar probabilidad marginal, condicional y conjunta
+3. ✅ Usar el Teorema de Bayes para inferencia
+4. ✅ Probar independencia estadística
+5. ✅ Crear documentos profesionales en LaTeX
+6. ✅ Comunicar resultados técnicos en video
+7. ✅ Visualizar datos con Python
+8. ✅ Interpretar resultados en contexto de negocio
+
+---
+
+## 📝 Licencia
+
+Este proyecto es de uso educativo. El dataset pertenece al UCI ML Repository.
+El código y análisis pueden ser usados libremente con atribución apropiada.
+
+---
+
+## ⭐ Si este proyecto te ayudó...
+
+- Dale ⭐ al repositorio
+- Comparte con tus compañeros
+- Déjanos saber qué mejoras sugieres
+- Contribuye con tus propios análisis
+
+---
+
+**¡Éxito con tu proyecto!** 🎉
+
+Si tienes preguntas, revisa primero la sección de "Solución de Problemas".
+Para dudas específicas de probabilidad, consulta el marco teórico en el informe LaTeX.
+
+---
+
+*Última actualización: Diciembre 2024*
